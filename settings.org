@@ -102,7 +102,11 @@ This config will define packages using the use-package module. The packages shou
   (add-hook 'prog-mode-hook (lambda () (display-line-numbers-mode 1)))
   (add-hook 'prog-mode-hook (lambda () (set-default 'truncate-lines t)))
 
-  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height 130)
+(let ((font-size (if (string= (system-name) "thinkpad")
+                      130
+                      180)))
+  (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height font-size))
+
 #+end_src
 * Configure Theme
 + Use the beautiful leuven-theme
