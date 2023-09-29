@@ -101,7 +101,8 @@
   (add-hook 'prog-mode-hook (lambda () (display-line-numbers-mode 1)))
   (add-hook 'prog-mode-hook (lambda () (set-default 'truncate-lines t)))
 
-  (let ((font-size (if (string= (system-name) "thinkpad") 130 180)))
+  ;; This is set to the same number for both machines temporarily for testing
+  (let ((font-size (if (string= (system-name) "thinkpad") 130 130)))
     (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height font-size))
 #+end_src
 * Configure Theme
