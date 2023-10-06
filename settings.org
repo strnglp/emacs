@@ -104,220 +104,240 @@
   ;; This is set to the same number for both machines temporarily for testing
   (let ((font-size (if (string= (system-name) "thinkpad") 130 130)))
     (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height font-size))
-#+end_src
+  #+end_src
 * Configure Theme
   + Use the beautiful leuven-theme
   + Adapt the theme based on the time of day, swap between dark and light
-#+begin_src emacs-lisp
-  (use-package leuven-theme)
+  #+begin_src emacs-lisp
+    (use-package leuven-theme)
 
-  (defun adapt-theme ()
-    (let* ((time (current-time))
-	   (decoded-time (decode-time time))
-	   (hour (nth 2 decoded-time)))
-      (if (or (< hour 7) (>= hour 19))
-	  (unless (eq current-theme dark-theme)
-	    (setq current-theme dark-theme)
-	    (load-theme dark-theme))
-	(unless (eq current-theme light-theme)
-	  (setq current-theme light-theme)
-	  (load-theme light-theme)))))
+    (defun adapt-theme ()
+      (let* ((time (current-time))
+	     (decoded-time (decode-time time))
+	     (hour (nth 2 decoded-time)))
+	(if (or (< hour 7) (>= hour 19))
+	    (unless (eq current-theme dark-theme)
+	      (setq current-theme dark-theme)
+	      (load-theme dark-theme))
+	  (unless (eq current-theme light-theme)
+	    (setq current-theme light-theme)
+	    (load-theme light-theme)))))
 
-  (defun clear-theme ()
-    (disable-theme dark-theme)
-    (disable-theme light-theme)
-    (setq current-theme nil))
+    (defun clear-theme ()
+      (disable-theme dark-theme)
+      (disable-theme light-theme)
+      (setq current-theme nil))
 
-  (defun reset-theme ()
-    (clear-theme)
-    (adapt-theme))
+    (defun reset-theme ()
+      (clear-theme)
+      (adapt-theme))
 
-  ;; Because loading a prior desktop save has an adverse affect
-  ;; on the state of the theme, by retaining what could have been
-  ;; a different font lock than what the intended themes provide
-  ;; by way of the user interactively changing themes. We need
-  ;; to hook into the desktop reload and start from scratch.
-  (add-hook 'desktop-after-read-hook 'reset-theme)
+    ;; Because loading a prior desktop save has an adverse affect
+    ;; on the state of the theme, by retaining what could have been
+    ;; a different font lock than what the intended themes provide
+    ;; by way of the user interactively changing themes. We need
+    ;; to hook into the desktop reload and start from scratch.
+    (add-hook 'desktop-after-read-hook 'reset-theme)
 
-  ;; Set the correct theme when launched if not using a saved desktop
-  (unless desktop-save-mode
-    (adapt-theme))
-  ;; Try and swap themes every minute in case it's time to change
-  (run-with-timer 0 60 'adapt-theme)
-#+end_src
+    ;; Set the correct theme when launched if not using a saved desktop
+    (unless desktop-save-mode
+      (adapt-theme))
+    ;; Try and swap themes every minute in case it's time to change
+    (run-with-timer 0 60 'adapt-theme)
+  #+end_src
 * Configure org-mode
   + Configure agenda paths, both syncthing shared paths and local paths, and refiling
   + Add key bindings for links and agenda mode
   + Hide keywords and markup for tidiness
   + Turn on org-tempo to allow expansion of <s TAB to #+begin_src
   + Automatically turn on visual line mode
-#+begin_src emacs-lisp
-  (defun my-org-agenda-files ()
-    (let* ((manual-agenda-files
-	    '("~/Sync/Documents/Notes/Archive/Done.org"
-	      "~/Sync/Documents/Notes/TODO.org"))
-	   (document-files
-	    (directory-files-recursively "~/Documents/" "\.org$")))
-      (append manual-agenda-files document-files)))
+  #+begin_src emacs-lisp
+    (defun my-org-agenda-files ()
+      (let* ((manual-agenda-files
+	      '("~/Sync/Documents/Notes/Archive/Done.org"
+		"~/Sync/Documents/Notes/TODO.org"))
+	     (document-files
+	      (directory-files-recursively "~/Documents/" "\.org$")))
+	(append manual-agenda-files document-files)))
 
-  (use-package org
-    :bind (:map org-mode-map
-		("\C-cl" . org-store-link)
-		("\C-ca" . org-agenda))
-    :config
-    (setq
-     org-agenda-files (my-org-agenda-files)
-     org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9))
-     org-hidden-keywords (quote (title author email date begin_quote end_quote))
-     org-adapt-indentation 'headline-data
-     org-hide-emphasis-markers t
-     org-fontify-whole-heading-line t)
-    (add-to-list 'org-modules 'org-tempo t)
-    (add-hook 'org-mode-hook 'visual-line-mode))
+    (use-package org
+      :bind (:map org-mode-map
+		  ("\C-cl" . org-store-link)
+		  ("\C-ca" . org-agenda))
+      :config
+      (setq
+       org-agenda-files (my-org-agenda-files)
+       org-refile-targets '((nil :maxlevel . 9) (org-agenda-files :maxlevel . 9))
+       org-hidden-keywords (quote (title author email date begin_quote end_quote))
+       org-adapt-indentation 'headline-data
+       org-hide-emphasis-markers t
+       org-fontify-whole-heading-line t)
+      (add-to-list 'org-modules 'org-tempo t)
+      (add-hook 'org-mode-hook 'visual-line-mode))
 
-  ;; Visual fill mode for margins
-  (use-package visual-fill-column
-    :init
-    (setq visual-fill-column-center-text t)
-    (setq-default fill-column 90)
-    :config
-    (add-hook 'visual-line-mode-hook 'visual-fill-column-mode))
-#+end_src
+    ;; Visual fill mode for margins
+    (use-package visual-fill-column
+      :init
+      (setq visual-fill-column-center-text t)
+      (setq-default fill-column 90)
+      :config
+      (add-hook 'visual-line-mode-hook 'visual-fill-column-mode))
+  #+end_src
 * Evil mode
   + Enable vim motions
   + Make j & k respect visual lines
   + Make C-u page up like it should be
-#+begin_src emacs-lisp
-  (use-package evil
-    :demand t
-    :bind ("<escape>" . keyboard-escape-quit)
-    :init
-    (setq evil-want-keybinding nil
-	  evil-respect-visual-line-mode t
-	  evil-want-C-u-scroll t)
-    :config
-    (evil-set-undo-system 'undo-redo)
-    (evil-mode 1))
+  #+begin_src emacs-lisp
+    (use-package evil
+      :demand t
+      :bind ("<escape>" . keyboard-escape-quit)
+      :init
+      (setq evil-want-keybinding nil
+	    evil-respect-visual-line-mode t
+	    evil-want-C-u-scroll t)
+      :config
+      (evil-set-undo-system 'undo-redo)
+      (evil-mode 1))
 
-  (use-package evil-collection
-    :diminish evil-collection-unimpaired-mode
-    :after evil
-    :config (evil-collection-init))
+    (use-package evil-collection
+      :diminish evil-collection-unimpaired-mode
+      :after evil
+      :config (evil-collection-init))
 
-#+end_src
+  #+end_src
 * Completion 
   + Configure ivy buffers to use vim motions
   + Configure counsel for modern buffer and find file minibuffers
-#+begin_src emacs-lisp
-  (use-package ivy
-    :diminish ivy-mode
-    :bind (("C-s" . swiper)
-	   :map ivy-minibuffer-map
-	   ("TAB" . ivy-alt-done)
-	   ("C-l" . ivy-alt-done)
-	   ("C-j" . ivy-next-line)
-	   ("C-k" . ivy-previous-line)
-	   :map ivy-switch-buffer-map
-	   ("C-k" . ivy-previous-line)
-	   ("C-l" . ivy-done)
-	   ("C-d" . ivy-switch-buffer-kill)
-	   :map ivy-reverse-i-search-map
-	   ("C-k" . ivy-previous-line)
-	   ("C-d" . ivy-reverse-i-search-kill))
-    :config
-    (ivy-mode 1))
+  #+begin_src emacs-lisp
+    (use-package ivy
+      :diminish ivy-mode
+      :bind (("C-s" . swiper)
+	     :map ivy-minibuffer-map
+	     ("TAB" . ivy-alt-done)
+	     ("C-l" . ivy-alt-done)
+	     ("C-j" . ivy-next-line)
+	     ("C-k" . ivy-previous-line)
+	     :map ivy-switch-buffer-map
+	     ("C-k" . ivy-previous-line)
+	     ("C-l" . ivy-done)
+	     ("C-d" . ivy-switch-buffer-kill)
+	     :map ivy-reverse-i-search-map
+	     ("C-k" . ivy-previous-line)
+	     ("C-d" . ivy-reverse-i-search-kill))
+      :config
+      (ivy-mode 1))
 
-  ;; Descriptive commands within ivy
-  (use-package ivy-rich
-    :after counsel
-    :config (ivy-rich-mode 1))
+    ;; Descriptive commands within ivy
+    (use-package ivy-rich
+      :after counsel
+      :config (ivy-rich-mode 1))
 
-  ;; Interactive completion functions
-  (use-package counsel
-    :bind (("M-x" . counsel-M-x)
-	   ("C-x b" . counsel-ibuffer)
-	   ("C-x C-f" . counsel-find-file)
-	   :map minibuffer-local-map
-	   ("C-r" . 'counsel-minibuffer-history)))
-#+end_src
+    ;; Interactive completion functions
+    (use-package counsel
+      :bind (("M-x" . counsel-M-x)
+	     ("C-x b" . counsel-ibuffer)
+	     ("C-x C-f" . counsel-find-file)
+	     :map minibuffer-local-map
+	     ("C-r" . 'counsel-minibuffer-history)))
+  #+end_src
 * Help
   + Configure which-key to provide a minibuffer when a leader is pressed
   + Configure helpful to provide context aware help from the buffer
-#+begin_src emacs-lisp
-  (use-package which-key
-    :diminish which-key-mode
-    :init (setq which-key-idle-delay 0.3)
-    :config (which-key-mode))
+  #+begin_src emacs-lisp
+    (use-package which-key
+      :diminish which-key-mode
+      :init (setq which-key-idle-delay 0.3)
+      :config (which-key-mode))
 
-  (use-package helpful
-    :custom
-    (counsel-describe-function-function #'helpful-callable)
-    (counsel-describe-variable-function #'helpful-variable)
-    :bind
-    ([remap describe-function] . counsel-describe-function)
-    ([remap describe-variable] . counsel-describe-variable)
-    ([remap describe-command] . helpful-command)
-    ([remap describe-key] . helpful-key))
-#+end_src
+    (use-package helpful
+      :custom
+      (counsel-describe-function-function #'helpful-callable)
+      (counsel-describe-variable-function #'helpful-variable)
+      :bind
+      ([remap describe-function] . counsel-describe-function)
+      ([remap describe-variable] . counsel-describe-variable)
+      ([remap describe-command] . helpful-command)
+      ([remap describe-key] . helpful-key))
+  #+end_src
 * Syntax highlighting and completion in programming modes
   + Configure treesitter for detailed syntax highlighting
   + Configure eglot to auto-attach to language server providers in programming modes
   + Configure cider for clojure REPL interactivity
-#+begin_src emacs-lisp
-  ;; Language grammars
-  (setq treesit-language-source-alist
-	'((bash "https://github.com/tree-sitter/tree-sitter-bash")
-	  (clojure "https://github.com/sogaiu/tree-sitter-clojure")
-	  (css "https://github.com/tree-sitter/tree-sitter-css")
-	  (elisp "https://github.com/Wilfred/tree-sitter-elisp")
-	  (html "https://github.com/tree-sitter/tree-sitter-html")
-	  (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
-	  (json "https://github.com/tree-sitter/tree-sitter-json")
-	  (lua "https://github.com/tjdevries/tree-sitter-lua")
-	  (markdown "https://github.com/ikatyang/tree-sitter-markdown")
-	  (python "https://github.com/tree-sitter/tree-sitter-python")
-	  (ruby "https://github.com/tree-sitter/tree-sitter-ruby")
-	  (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
-	  (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
-	  (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
+  #+begin_src emacs-lisp
+    ;; Language grammars
+    (setq treesit-language-source-alist
+	  '((bash "https://github.com/tree-sitter/tree-sitter-bash")
+	    (clojure "https://github.com/sogaiu/tree-sitter-clojure")
+	    (css "https://github.com/tree-sitter/tree-sitter-css")
+	    (elisp "https://github.com/Wilfred/tree-sitter-elisp")
+	    (html "https://github.com/tree-sitter/tree-sitter-html")
+	    (javascript "https://github.com/tree-sitter/tree-sitter-javascript" "master" "src")
+	    (json "https://github.com/tree-sitter/tree-sitter-json")
+	    (lua "https://github.com/tjdevries/tree-sitter-lua")
+	    (markdown "https://github.com/ikatyang/tree-sitter-markdown")
+	    (python "https://github.com/tree-sitter/tree-sitter-python")
+	    (ruby "https://github.com/tree-sitter/tree-sitter-ruby")
+	    (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src")
+	    (typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src")
+	    (yaml "https://github.com/ikatyang/tree-sitter-yaml")))
 
-  (unless (file-directory-p "~/.emacs.d/tree-sitter")
-    (mapc #'treesit-install-language-grammar
-	  (mapcar #'car treesit-language-source-alist)))
+    (unless (file-directory-p "~/.emacs.d/tree-sitter")
+      (mapc #'treesit-install-language-grammar
+	    (mapcar #'car treesit-language-source-alist)))
 
-  ;; Non-default modes
-  (use-package clojure-ts-mode)
-  (use-package lua-mode)
+      ;;; Non-default modes
+    ;; Clojure
+    (use-package clojure-ts-mode)
+    ;; Lua
+    (use-package lua-mode)
 
-  ;; Map modes to ts-modes
-  (setq major-mode-remap-alist
-	'((bash-mode . bash-ts-mode)
-	  (clojure-mode . clojure-ts-mode)
-	  (css-mode . css-ts-mode)
-	  (yaml-mode . yaml-ts-mode)
-	  (js-mode . js-ts-mode)
-	  (json-mode . json-ts-mode)
-	  (python-mode . python-ts-mode)
-	  (typescript-mode . typescript-ts-mode)))
+    ;; Map modes to treesitter modes
+    (setq major-mode-remap-alist
+	  '((bash-mode . bash-ts-mode)
+	    (clojure-mode . clojure-ts-mode)
+	    (css-mode . css-ts-mode)
+	    (yaml-mode . yaml-ts-mode)
+	    (js-mode . js-ts-mode)
+	    (json-mode . json-ts-mode)
+	    (python-mode . python-ts-mode)
+	    (typescript-mode . typescript-ts-mode)))
 
-    ;;; LSP
-  (use-package eglot
-    :config
-    (setq eglot-autoshutdown t)
-    (setq eldoc-echo-area-use-multiline-p 0.1)
-    (add-to-list 'eglot-server-programs '(clojure-ts-mode . ("clojure-lsp")))
-    :hook (clojure-ts-mode . eglot-ensure))
+      ;;; LSP
+    (use-package eglot
+      :config
+      (setq eglot-autoshutdown t)
+      (setq eldoc-echo-area-use-multiline-p 0.1)
+      (add-to-list 'eglot-server-programs '(clojure-ts-mode . ("clojure-lsp")))
+      :hook (clojure-ts-mode . eglot-ensure))
 
-    ;;; Clojure dev
-  (use-package cider
-    :init (add-hook 'cider-mode-hook #'clj-refactor-mode)
-    :diminish subword-mode
-    :config
-    (setq nrepl-log-messages t                  
-	  cider-repl-use-clojure-font-lock t    
-	  cider-prompt-save-file-on-load 'always-save
-	  cider-font-lock-dynamically '(macro core function var)
-	  nrepl-hide-special-buffers t            
-	  cider-overlays-use-font-lock t)         
-    (cider-repl-toggle-pretty-printing))
+      ;;; Clojure dev
+    (use-package cider
+      :init (add-hook 'cider-mode-hook #'clj-refactor-mode)
+      :diminish subword-mode
+      :config
+      (setq nrepl-log-messages t                  
+	    cider-repl-use-clojure-font-lock t    
+	    cider-prompt-save-file-on-load 'always-save
+	    cider-font-lock-dynamically '(macro core function var)
+	    nrepl-hide-special-buffers t            
+	    cider-overlays-use-font-lock t)         
+      (cider-repl-toggle-pretty-printing))
+
+    ;; Web dev
+    (use-package web-mode
+      :config
+      (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.css\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.\\(js\\|mjs\\|cjs\\)\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.ts\\'" . web-mode))
+      (add-to-list 'auto-mode-alist '("\\.php\\'" . web-mode))
+      (setq web-mode-markup-indent-offset 2
+	    web-mode-css-indent-offset 2
+	    web-mode-code-indent-offset 2))
+
+    ;; Unity shaders
+    (use-package shader-mode
+      :config
+      (add-to-list 'auto-mode-alist '("\\.compute\\'" . shader-mode))
+      )
 #+end_src
