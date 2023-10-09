@@ -1,72 +1,125 @@
-* Configure use-package
+* Configure use-package & straight-use-package
   This config will define packages using the use-package module. The packages should always ensure loading and use the two largest package repositories. It will also keep the elpa keyring up to date automatically.
-#+begin_src emacs-lisp
-  (setq use-package-always-ensure t
-	package-archives 
-	'(("melpa" . "https://melpa.org/packages/")
-	  ("elpa" . "https://elpa.gnu.org/packages/")))
-  (package-initialize)
-  (unless (package-installed-p 'use-package)
-    (package-refresh-contents)
-    (package-install 'use-package))
-  (eval-when-compile (require 'use-package))
-  (use-package gnu-elpa-keyring-update)
-#+end_src
+  + straight-use-package allows installation of non-melpa packages through git
+  #+begin_src emacs-lisp
+    (setq use-package-always-ensure t
+	  package-archives 
+	  '(("melpa" . "https://melpa.org/packages/")
+	    ("elpa" . "https://elpa.gnu.org/packages/")))
+    (package-initialize)
+    (unless (package-installed-p 'use-package)
+      (package-refresh-contents)
+      (package-install 'use-package))
+    (eval-when-compile (require 'use-package))
+    (use-package gnu-elpa-keyring-update)
+    ;; straight-use-package
+    (defvar bootstrap-version)
+    (let ((bootstrap-file
+	   (expand-file-name "straight/repos/straight.el/bootstrap.el"   user-emacs-directory))
+	  (bootstrap-version 6))
+      (unless (file-exists-p bootstrap-file)
+	(with-current-buffer
+	    (url-retrieve-synchronously "https://raw.githubusercontent.com/radian-software/straight.el/develop/install.el"
+					'silent 'inhibit-cookies)
+	  (goto-char (point-max))
+	  (eval-print-last-sexp)))
+      (load bootstrap-file nil 'nomessage))
+  #+end_src
 * Configure the general behavior of emacs
   + Disable start up message, turn of bells, and make it harder to quit by accident
   + Enable middle mouse click paste for Linux and disable right click
   + Enable overwriting selected text
   + Focus the buffer menu when it's opened
   + If winner mode is available enable it and allow cycling through window configurations
-#+begin_src emacs-lisp
-  (setq
-   inhibit-startup-message t
-   ring-bell-function 'ignore
-   mouse-yank-at-point t)
+  + Start the server so =emacsclient= can connect
+  #+begin_src emacs-lisp
+    (setq
+     inhibit-startup-message t
+     ring-bell-function 'ignore
+     mouse-yank-at-point t)
 
-  (global-unset-key (kbd "C-x C-c"))
-  (global-unset-key [mouse-3])
-  (delete-selection-mode t) ; Replace selected text with input
-  (global-set-key [remap list-buffers] #'buffer-menu)
+    (global-unset-key (kbd "C-x C-c"))
+    (global-unset-key [mouse-3])
+    (delete-selection-mode t) ; Replace selected text with input
+    (global-set-key [remap list-buffers] #'buffer-menu)
 
-  (when (fboundp 'winner-mode)
-    (winner-mode 1))
-#+end_src
+    (when (fboundp 'winner-mode)
+      (winner-mode 1))
+    (use-package server
+      :config
+      (unless (server-running-p)
+	(server-start)))
+  #+end_src
 * Configure workspace behavior
   + Consolidate backup files
   + Automatically save and restore sessions
   + Automatically load changed files from disk
-#+begin_src emacs-lisp
-  (setq
-   backup-directory-alist `((".*" . ,"~/Documents/.backups"))
-   desktop-dirname (concat "~/.emacs.d/" (system-name))
-   desktop-base-file-name      "emacs.desktop"
-   desktop-base-lock-name      "lock"
-   desktop-path                (list desktop-dirname)
-   desktop-save                t
-   desktop-files-not-to-save   "^$" ;reload tramp paths
-   desktop-load-locked-desktop nil
-   desktop-auto-save-timeout   30)
+  #+begin_src emacs-lisp
+    (setq
+     backup-directory-alist `((".*" . ,"~/Documents/.backups"))
+     desktop-dirname (concat "~/.emacs.d/" (system-name))
+     desktop-base-file-name      "emacs.desktop"
+     desktop-base-lock-name      "lock"
+     desktop-path                (list desktop-dirname)
+     desktop-save                t
+     desktop-files-not-to-save   "^$" ;reload tramp paths
+     desktop-load-locked-desktop nil
+     desktop-auto-save-timeout   30)
 
-  (desktop-save-mode 1)
-  (global-auto-revert-mode t)
-#+end_src
+    (desktop-save-mode 1)
+    (global-auto-revert-mode t)
+  #+end_src
 * Configure useful utilities
   + sudo-edit to compensate for my lack of foresight
   + ripgrep for fast search
   + Install swiper for in buffer sarch
   + Configure company for completion modals
-#+begin_src emacs-lisp
-  (use-package sudo-edit)
-  (use-package rg
-    :config (setq rg-ignore-case 'smart)
-    :init (rg-enable-default-bindings))
-  (use-package swiper)
-  (use-package company
-    :diminish company-mode
-    :bind (("TAB" . 'company-complete))
-    :config (global-company-mode))
-#+end_src
+  #+begin_src emacs-lisp
+    (use-package sudo-edit)
+    (use-package rg
+      :config (setq rg-ignore-case 'smart)
+      :init (rg-enable-default-bindings))
+    (use-package swiper)
+    (use-package company
+      :diminish company-mode
+      :bind
+      (:map company-mode-map
+	    ("<tab>". tab-indent-or-complete)
+	    ("TAB". tab-indent-or-complete))
+      :config
+      (setq
+       company-begin-commands '(self-insert-command)
+       omnisharp-company-do-template-completion t)
+
+      (company-frontends
+       (quote
+	(company-pseudo-tooltip-frontend company-echo-metadata-frontend)))
+      (company-idle-delay 0.03)
+      (company-minimum-prefix-length 1)
+      (company-require-match nil)
+      (company-show-numbers t)
+      (omnisharp-auto-complete-want-documentation nil)
+      (omnisharp-company-sort-results t))
+
+
+    (defun tab-indent-or-complete ()
+      (interactive)
+      (if (minibufferp)
+	  (minibuffer-complete)
+	(if (check-expansion)
+	    (company-complete-common)
+	  (indent-for-tab-command)))) 
+    (defun check-expansion ()
+      (save-excursion
+	(if (looking-at "\\_>") t
+	  (backward-char 1)
+	  (if (looking-at "\\.") t
+	    (backward-char 1)
+	    (if (looking-at "::") t nil)))))
+
+
+
+  #+end_src
 * General appearance
   + Enable a fringe/gutter on the side of the window
   + Enable custom themes without being prompted to allow
@@ -76,34 +129,34 @@
   + Install rainbow-delimiters for paranthesis matching
   + Install diminish to allow disabling of minor mode spam in the modeline
   + Set the font conditionally to the correct size based on the system-name
-#+begin_src emacs-lisp
-  (setq
-   fringe-mode 10
-   custom-safe-themes t
-   current-theme nil
-   dark-theme 'leuven-dark
-   light-theme 'leuven)
+  #+begin_src emacs-lisp
+    (setq
+     fringe-mode 10
+     custom-safe-themes t
+     current-theme nil
+     dark-theme 'leuven-dark
+     light-theme 'leuven)
 
-  (tool-bar-mode -1)
-  (tooltip-mode -1)
-  (menu-bar-mode -1)
+    (tool-bar-mode -1)
+    (tooltip-mode -1)
+    (menu-bar-mode -1)
 
-  (use-package rainbow-mode
-    :config
-    (rainbow-mode 1))
+    (use-package rainbow-mode
+      :config
+      (rainbow-mode 1))
 
-  (use-package rainbow-delimiters
-    :hook (prog-mode . rainbow-delimiters-mode))
+    (use-package rainbow-delimiters
+      :hook (prog-mode . rainbow-delimiters-mode))
 
-  (use-package diminish)
+    (use-package diminish)
 
 
-  (add-hook 'prog-mode-hook (lambda () (display-line-numbers-mode 1)))
-  (add-hook 'prog-mode-hook (lambda () (set-default 'truncate-lines t)))
+    (add-hook 'prog-mode-hook (lambda () (display-line-numbers-mode 1)))
+    (add-hook 'prog-mode-hook (lambda () (set-default 'truncate-lines t)))
 
-  ;; This is set to the same number for both machines temporarily for testing
-  (let ((font-size (if (string= (system-name) "thinkpad") 130 130)))
-    (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height font-size))
+    ;; This is set to the same number for both machines temporarily for testing
+    (let ((font-size (if (string= (system-name) "thinkpad") 130 180)))
+      (set-face-attribute 'default nil :font "JetBrainsMono Nerd Font" :height font-size))
   #+end_src
 * Configure Theme
   + Use the beautiful leuven-theme
@@ -285,7 +338,6 @@
       (mapc #'treesit-install-language-grammar
 	    (mapcar #'car treesit-language-source-alist)))
 
-      ;;; Non-default modes
     ;; Clojure
     (use-package clojure-ts-mode)
     ;; Lua
@@ -302,15 +354,16 @@
 	    (python-mode . python-ts-mode)
 	    (typescript-mode . typescript-ts-mode)))
 
-      ;;; LSP
+    ;;; Generic LSP client
     (use-package eglot
       :config
       (setq eglot-autoshutdown t)
       (setq eldoc-echo-area-use-multiline-p 0.1)
       (add-to-list 'eglot-server-programs '(clojure-ts-mode . ("clojure-lsp")))
-      :hook (clojure-ts-mode . eglot-ensure))
+      :hook
+      (clojure-ts-mode . eglot-ensure))
 
-      ;;; Clojure dev
+	;;; Clojure dev
     (use-package cider
       :init (add-hook 'cider-mode-hook #'clj-refactor-mode)
       :diminish subword-mode
@@ -335,9 +388,21 @@
 	    web-mode-css-indent-offset 2
 	    web-mode-code-indent-offset 2))
 
-    ;; Unity shaders
+    ;; Unity
+    (straight-use-package
+     '(unity :type git :host github :repo "elizagamedev/unity.el"))
+    (add-hook 'after-init-hook #'unity-mode)
+
     (use-package shader-mode
       :config
-      (add-to-list 'auto-mode-alist '("\\.compute\\'" . shader-mode))
-      )
+      (add-to-list 'auto-mode-alist '("\\.shader\\'" . shader-mode))
+      (add-to-list 'auto-mode-alist '("\\.compute\\'" . shader-mode)))
+
+    ;; Not currently working 
+    ;;(setenv "FrameworkPathOverride" "/lib/mono/4.5")
+    ;; Omnisharp LSP client and server manager
+    ;;(use-package omnisharp
+    ;;:hook ((csharp-mode . omnisharp-mode)))
+
+
 #+end_src
