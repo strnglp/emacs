@@ -149,15 +149,14 @@
       plain "%?"
       :if-new
       (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                 (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                            "#+title: ${title}")
-                 :unnarrowed t)
-      ("D" "Dated"
-       plain "%?"
-       :if-new
-       (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
-                  "#+title: ${title} %t")
-       :unnarrowed t))))
+                 "#+title: ${title}")
+      :unnarrowed t)
+     ("D" "Dated"
+      plain "%?"
+      :if-new
+      (file+head "%<%Y%m%d%H%M%S>-${slug}.org"
+                 "#+title: ${title} %t")
+      :unnarrowed t)))
 
   (org-roam-db-autosync-mode)
 

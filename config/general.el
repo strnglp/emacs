@@ -173,9 +173,7 @@
   :mode ("\\.pdf\\'" . pdf-view-mode)
   :bind (:map pdf-view-mode-map
               ("q" . nil)
-              ("M-s o" . my-pdf-occur-and-switch))
-  :config
-  (pdf-tools-install))
+              ("M-s o" . my-pdf-occur-and-switch)))
 
 (use-package marginalia
   :init (marginalia-mode))
