@@ -194,7 +194,7 @@
     :config
     (global-set-key (kbd "C-c RET") 'gptel-send)
     (setq
-     gptel-model 'gemini-pro
+     gptel-model 'gemini-2.5-pro-exp-03-25
      gptel-backend
      (gptel-make-gemini "Gemini"
        :key (funcall (plist-get
