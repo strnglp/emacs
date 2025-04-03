@@ -14,6 +14,8 @@
                   (icomplete-vertical-mode 1)))
   :config
   (setq
+   auth-sources '((:source "~/.config/emacs/.authinfo.gpg"))
+   epg-pinentry-mode 'loopback
    icomplete-compute-delay 0
    icomplete-delay-completions-threshold 0
    icomplete-hide-common-prefix nil
@@ -186,19 +188,18 @@
   (setq rainbow-x-colors nil)
   :hook (prog-mode . rainbow-mode))
 
-(when (string= (system-name) "tower")
-  (use-package gptel
-    :bind ("<f6>" . gptel)
-    :config
-    (global-set-key (kbd "C-c RET") 'gptel-send)
-    (setq
-     gptel-model 'gemini-2.5-pro-exp-03-25
-     gptel-backend
-     (gptel-make-gemini "Gemini"
-       :key (funcall (plist-get
-                      (car (auth-source-search :host "aistudio.google.com"))
-                      :secret))
-       :stream t))))
+(use-package gptel
+  :bind ("<f6>" . gptel)
+  :config
+  (global-set-key (kbd "C-c RET") 'gptel-send)
+  (setq
+   gptel-model 'gemini-2.5-pro-exp-03-25
+   gptel-backend
+   (gptel-make-gemini "Gemini"
+     :key (funcall (plist-get
+                    (car (auth-source-search :host "aistudio.google.com"))
+                    :secret))
+     :stream t)))
 
 (defun format-elisp-buffer ()
   "Format the current Emacs Lisp buffer."
@@ -206,11 +207,9 @@
   (indent-region (point-min) (point-max))
   (delete-trailing-whitespace))
 
-(setq ispell-program-name "aspell"
-      ispell-dictionary "en_US")
-
-(when (string= (system-name) "tower")
-  (setq auth-sources '((:source "~/.config/emacs/.authinfo.gpg"))))
+(setq
+ ispell-program-name "aspell"
+ ispell-dictionary "en_US")
 
 (with-eval-after-load 'icomplete
   (defun my-icomplete-scroll-size ()
