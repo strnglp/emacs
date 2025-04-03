@@ -44,6 +44,7 @@
 
 (setq
  Man-notify-method 'aggressive
+ auto-save-visited-mode t
  backup-inhibited t
  browse-url-browser-function #'browse-url-firefox
  browse-url-secondary-browser-function #'browse-url-eww
