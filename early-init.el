@@ -20,8 +20,6 @@
       startup-message-log nil
       warning-minimum-level :emergency)
 
-
-
 (defun silent-message (format-string &rest args)
   (push (apply #'format format-string args) startup-message-log))
 (advice-add 'message :override #'silent-message)
@@ -54,8 +52,7 @@
  default-frame-alist '((width . 120) (height . 48))
  frame-resize-pixelwise t
  frame-inhibit-implied-resize t
- frame-title-format '("Emacs")
- )
+ frame-title-format '("Emacs"))
 
 (cond
  ((eq system-type 'gnu/linux)
@@ -64,8 +61,7 @@
   (setq-local
    my/mono-font "JetBrainsMono Nerd Font-16"
    my/mono-face "JetBrainsMono Nerd Font 16"))
- (t ())
- )
+ (t ()))
 
 (defvar after-load-theme-hook nil
   "Hook run after a color theme is loaded using `load-theme'.")
