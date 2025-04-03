@@ -31,8 +31,6 @@
     ;; Return the resulting color or nil if invalid
     color))
 
-
-
 (defun get-terminal-colors-from-theme ()
   "Extract ansi colors from the active theme, including default foreground and background."
   (let* ((default-fg (get-hex-color-for-face 'default :foreground))
@@ -57,8 +55,6 @@
                   (cons 'selection-background selection-bg)
                   (cons 'cursor-background cursor-bg)))))
 
-
-
 (defun get-window-colors-from-theme ()
   "Extract window colors from the active theme"
   `((highlight-background . ,(get-hex-color-for-face 'highlight :background))
@@ -74,7 +70,6 @@
     (window-divider-fg . ,(get-hex-color-for-face 'window-divider :foreground))
     (inactive-window-divider-fg . ,(get-hex-color-for-face 'window-divider-last-pixel :foreground))))
 
-
 (defun write-color-data (path)
   "Combine the ansi colors and window colors from the current theme and write them to ~/.emacs.d/color-data.json"
   (write-region
@@ -87,7 +82,6 @@
      (json-pretty-print (point-min) (point-max))
      (buffer-string))
    nil path))
-
 
 (defun render-template (template-dir out)
   (let ((mustache-partial-paths (list template-dir))

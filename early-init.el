@@ -2,7 +2,7 @@
 ;;     ⚠️ BEHAVIOR CHANGES     ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq gc-cons-threshold (* 50 1000 1000))
-(defun my/display-startup-time ()
+(defun display-startup-time ()
   (setq gc-cons-threshold (* 2 1000 1000))
   (advice-remove 'message #'silent-message)
   (message "Emacs loaded in %s with %d garbage collections."
@@ -10,17 +10,17 @@
                    (float-time
                     (time-subtract after-init-time before-init-time)))
            gcs-done))
-(add-hook 'emacs-startup-hook #'my/display-startup-time)
-
+(add-hook 'emacs-startup-hook #'display-startup-time)
 
 (setq inhibit-startup-screen t
       inhibit-startup-message t
       inhibit-startup-echo-area-message t
       initial-scratch-message nil
       ring-bell-function 'ignore
+      startup-message-log nil
       warning-minimum-level :emergency)
 
-(defvar startup-message-log nil)
+
 
 (defun silent-message (format-string &rest args)
   (push (apply #'format format-string args) startup-message-log))
@@ -73,14 +73,14 @@
   "Run `after-load-theme-hook'."
   (run-hooks 'after-load-theme-hook))
 
-(defun my/set-faces ()
+(defun set-faces ()
   (set-face-attribute 'default nil :font my/mono-face)
   (set-face-attribute 'fixed-pitch nil :font my/mono-face)
   (set-face-attribute 'variable-pitch nil :font my/variable-face :weight 'book)
   (set-face-background 'vertical-border (face-background 'mode-line-inactive))
   (set-face-foreground 'vertical-border (face-background 'mode-line-inactive)))
 
-(defun my/set-org-faces ()
+(defun set-org-faces ()
   (with-eval-after-load 'org
     (when (facep 'org-meta-line)
       (set-face-attribute 'org-meta-line nil :inherit 'fixed-pitch))
@@ -95,16 +95,13 @@
   (with-eval-after-load 'org-superstar-mode
     (set-face-attribute 'org-superstar-item nil :inherit 'fixed-pitch :height 120)))
 
-(add-hook 'org-mode #'my/set-org-faces)
-(add-hook 'org-superstar-mode #'my/set-org-faces)
+(add-hook 'org-mode #'set-org-faces)
+(add-hook 'org-superstar-mode #'set-org-faces)
 (add-hook 'after-load-theme-hook (lambda  ()
-                                   (my/set-faces)
-                                   (my/set-org-faces)))
-
-
-
+                                   (set-faces)
+                                   (set-org-faces)))
 (add-hook 'after-make-frame-functions
           (lambda (_)
             (set-frame-font my/mono-font t t)
-            (my/set-faces)
-            (my/set-org-faces)))
+            (set-faces)
+            (set-org-faces)))

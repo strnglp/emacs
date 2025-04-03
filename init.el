@@ -31,9 +31,6 @@
 (require 'workspace)
 (require 'my-org)
 (when (string= (system-name) "tower")
-  (progn
-    ;; retiring gnus for now
-    ;;(require 'email)
-    (require 'unified-theme)))
+    (require 'unified-theme))
 
 (load custom-file 'noerror 'nomessage)

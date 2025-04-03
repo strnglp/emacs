@@ -29,8 +29,7 @@
              (name . "^\\*info\\*$")
              (name . "^\\*helpful")))))
 
- ibuffer-show-empty-filter-groups nil
- )
+ ibuffer-show-empty-filter-groups nil)
 
 (add-to-list
  'display-buffer-alist
@@ -64,8 +63,7 @@
     (display-buffer-in-side-window)
     (window-height . 0.25)
     (side . bottom)
-    (slot . 2))
-   ))
+    (slot . 2))))
 
 (add-hook 'ibuffer-mode-hook
           (lambda ()

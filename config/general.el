@@ -23,8 +23,7 @@
    icomplete-scroll t
    icomplete-separator "  "
    icomplete-show-matches-on-no-input t
-   icomplete-with-completion-tables t
-   )
+   icomplete-with-completion-tables t)
   (advice-add 'completion-at-point
               :after #'minibuffer-hide-completions))
 
@@ -41,8 +40,7 @@
 (setq-default
  buffer-file-coding-system 'utf-8-unix
  indent-tabs-mode nil
- tab-width 4
- )
+ tab-width 4)
 
 (setq
  Man-notify-method 'aggressive
@@ -91,14 +89,12 @@
  use-file-dialog nil
  use-short-answers t
  wdired-allow-to-change-permissions t
- wdired-create-parent-directories t
- )
+ wdired-create-parent-directories t)
 
 (when (eq system-type 'darwin)
   (setq
    mac-command-modifier 'meta
-   mac-option-modifier 'super
-   ))
+   mac-option-modifier 'super))
 
 (unless (string= (system-name) "tower")
   (setq dired-use-ls-dired nil))
@@ -133,16 +129,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;    ➕ BEHAVIOR ADDITIONS    ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package marginalia
-  :init (marginalia-mode))
+(use-package sudo-edit)
 
-(use-package clipetty
-  :bind ("M-w" . clipetty-kill-ring-save))
+(use-package define-word)
 
-(use-package rainbow-mode
-  :config
-  (setq rainbow-x-colors nil)
-  :hook (prog-mode . rainbow-mode))
+(use-package lua-mode)
 
 (use-package web-mode
   :mode
@@ -170,11 +161,6 @@
   (setq geiser-default-implementation 'guile
         geiser-guile-binary "guile3.0"))
 
-(use-package lua-mode)
-
-(use-package sudo-edit)
-
-(use-package define-word)
 
 (use-package move-lines
   :straight
@@ -189,6 +175,17 @@
               ("M-s o" . my-pdf-occur-and-switch))
   :config
   (pdf-tools-install))
+
+(use-package marginalia
+  :init (marginalia-mode))
+
+(use-package clipetty
+  :bind ("M-w" . clipetty-kill-ring-save))
+
+(use-package rainbow-mode
+  :config
+  (setq rainbow-x-colors nil)
+  :hook (prog-mode . rainbow-mode))
 
 (when (string= (system-name) "tower")
   (use-package gptel
@@ -290,8 +287,7 @@
  split-width-threshold 170
  visible-bell nil
  window-combination-resize t
- window-resize-pixelwise t
- )
+ window-resize-pixelwise t)
 
 (defun disable-all-themes ()
   "Disable all active themes."

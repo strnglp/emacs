@@ -178,7 +178,6 @@
                  ("C-c n a" . org-roam-alias-add)
                  ("<f1>" . org-roam-buffer-toggle)))))
 
-
 (use-package org-roam-ui
   :after org-roam
   :hook
