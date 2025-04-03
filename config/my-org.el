@@ -159,24 +159,24 @@
                   "#+title: ${title} %t")
        :unnarrowed t))))
 
-   (org-roam-db-autosync-mode)
+  (org-roam-db-autosync-mode)
 
-   :hook
-   (org-roam-mode . variable-pitch-mode)
-   (org-roam-mode . (lambda ()
-                      (setq-local
-                       cursor-type 'hollow
-                       display-buffer--same-window-action
-                       '(display-buffer-use-some-window
-                         (main)))))
-   :bind (("C-c n f" . org-roam-node-find)
-          ("C-c n r" . org-roam-node-random)
-          (:map org-mode-map
-                (("C-c n i" . org-roam-node-insert)
-                 ("C-c n o" . org-id-get-create)
-                 ("C-c n t" . org-roam-tag-add)
-                 ("C-c n a" . org-roam-alias-add)
-                 ("<f1>" . org-roam-buffer-toggle)))))
+  :hook
+  (org-roam-mode . variable-pitch-mode)
+  (org-roam-mode . (lambda ()
+                     (setq-local
+                      cursor-type 'hollow
+                      display-buffer--same-window-action
+                      '(display-buffer-use-some-window
+                        (main)))))
+  :bind (("C-c n f" . org-roam-node-find)
+         ("C-c n r" . org-roam-node-random)
+         (:map org-mode-map
+               (("C-c n i" . org-roam-node-insert)
+                ("C-c n o" . org-id-get-create)
+                ("C-c n t" . org-roam-tag-add)
+                ("C-c n a" . org-roam-alias-add)
+                ("<f1>" . org-roam-buffer-toggle)))))
 
 (use-package org-roam-ui
   :after org-roam
@@ -195,8 +195,11 @@
   :hook (org-mode . org-pdftools-setup-link))
 
 (use-package org-noter
+  :init
+  (setq org-noter-supported-modes
+        '(doc-view-mode pdf-view-mode))
   :config
-  (org-noter-enable-org-roam-integration))
+  (org-noter-enable-org-roam-integration)  )
 
 (use-package org-noter-pdftools
   :after org-noter)
