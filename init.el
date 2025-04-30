@@ -30,6 +30,7 @@
 (require 'general)
 (require 'workspace)
 (require 'my-org)
+(require 'auto-revert.el)
 (when (string= (system-name) "tower")
     (require 'unified-theme))
 

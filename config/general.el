@@ -14,8 +14,6 @@
                   (icomplete-vertical-mode 1)))
   :config
   (setq
-   auth-sources '((:source "~/.config/emacs/.authinfo.gpg"))
-   epg-pinentry-mode 'loopback
    icomplete-compute-delay 0
    icomplete-delay-completions-threshold 0
    icomplete-hide-common-prefix nil
@@ -181,6 +179,10 @@
   :init (marginalia-mode))
 
 (use-package clipetty
+  :straight
+  (clipetty :type git
+            :host github
+            :repo "strnglp/clipetty")
   :bind ("M-w" . clipetty-kill-ring-save))
 
 (use-package rainbow-mode
@@ -208,8 +210,11 @@
   (delete-trailing-whitespace))
 
 (setq
+ auth-sources '((:source "~/.config/emacs/.authinfo.gpg"))
+ epg-pinentry-mode 'loopback
  ispell-program-name "aspell"
  ispell-dictionary "en_US")
+
 
 (with-eval-after-load 'icomplete
   (defun my-icomplete-scroll-size ()
@@ -286,6 +291,8 @@
  visible-bell nil
  window-combination-resize t
  window-resize-pixelwise t)
+(add-to-list 'term-file-aliases
+             '("screen.xterm-256color" . "xterm-256color"))
 
 (defun disable-all-themes ()
   "Disable all active themes."
