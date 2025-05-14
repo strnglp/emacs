@@ -246,6 +246,11 @@
 (global-set-key (kbd "M-o") 'other-window)
 (global-set-key (kbd "s-a") 'my/toggle-window-transparency)
 
+(with-eval-after-load 'eglot
+  (add-to-list 'eglot-server-programs
+               '(ruby-mode . ("solargraph" "socket" "--port" :autoport))))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; 🎨 APPEARANCE CUSTOMIZATION ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
